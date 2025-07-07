@@ -1,0 +1,602 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imperative Sentences</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f4f8;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .draggable {
+            cursor: grab;
+            user-select: none;
+        }
+        .draggable:active {
+            cursor: grabbing;
+        }
+        .droppable {
+            transition: all 0.2s ease;
+        }
+        .droppable.highlight {
+            background-color: #e0f2fe !important;
+            transform: scale(1.02);
+        }
+        .warning {
+            animation: shake 0.5s;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+        .success-animation {
+            animation: success-pulse 0.5s;
+        }
+        @keyframes success-pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .shuffle-animation {
+            animation: shuffle 0.8s ease-in-out;
+        }
+        @keyframes shuffle {
+            0% { transform: translateX(0) translateY(0) rotate(0deg); }
+            25% { transform: translateX(10px) translateY(-10px) rotate(5deg); }
+            50% { transform: translateX(-5px) translateY(5px) rotate(-3deg); }
+            75% { transform: translateX(5px) translateY(-5px) rotate(2deg); }
+            100% { transform: translateX(0) translateY(0) rotate(0deg); }
+        }
+        .main-content {
+            flex: 1;
+        }
+        footer {
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content container mx-auto px-4 py-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-indigo-800 mb-2">Imperative Sentence</h1>
+        </header>
+
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <div class="mb-6">
+                <h3 class="text-xl font-semibold text-indigo-700 mb-2">What are Imperative Sentences?</h3>
+                <p class="text-gray-700 mb-2">Imperative sentences give commands, instructions, or requests.</p>
+                <p class="text-gray-600 italic">祈使句用於表達命令、指示或請求。</p>
+            </div>
+
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold text-indigo-700 mb-2">Structure of Imperative Sentences:</h3>
+                <div class="bg-indigo-50 p-4 rounded-lg">
+                    <p class="font-medium text-indigo-800 mb-1">Base form of verb + object/complement</p>
+                    <p class="text-gray-600 italic">動詞原形 + 受詞/補語</p>
+                    <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-white p-3 rounded border border-indigo-200">
+                            <p class="font-medium text-indigo-700">Close the door.</p>
+                            <p class="text-gray-600 italic text-sm">關上門。</p>
+                        </div>
+                        <div class="bg-white p-3 rounded border border-indigo-200">
+                            <p class="font-medium text-indigo-700">Please be quiet.</p>
+                            <p class="text-gray-600 italic text-sm">請安靜。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8" id="gameContainer">
+            <h3 class="text-xl font-semibold text-indigo-700 mb-4">Practice Game: Form the Imperative</h3>
+            <p class="text-gray-600 mb-6">Drag and drop the words to form correct imperative sentences.</p>
+
+            <div class="mb-8">
+                <div class="flex justify-between items-center mb-2">
+                    <h4 class="font-medium text-indigo-700">Level: <span id="levelDisplay">1</span></h4>
+                    <div>
+                        <span class="text-gray-600 mr-2">Score:</span>
+                        <span id="scoreDisplay" class="font-semibold text-indigo-800">0</span>
+                    </div>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                    <div id="progressBar" class="bg-indigo-600 h-2.5 rounded-full" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <div class="bg-indigo-50 p-4 rounded-lg mb-4">
+                    <p class="text-gray-700 mb-1">Form an imperative sentence with these words:</p>
+                    <div id="wordBank" class="flex flex-wrap gap-2 mt-3 min-h-[60px]"></div>
+                </div>
+
+                <div class="bg-indigo-100 p-4 rounded-lg">
+                    <p class="text-gray-700 mb-1">Your sentence:</p>
+                    <div id="sentenceArea" class="flex flex-wrap gap-2 min-h-[60px] bg-white p-3 rounded border-2 border-dashed border-indigo-300"></div>
+                </div>
+            </div>
+
+            <div class="flex justify-between">
+                <button id="checkButton" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-6 rounded-lg transition duration-300">
+                    Check Answer
+                </button>
+                <button id="resetButton" class="bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 px-6 rounded-lg transition duration-300">
+                    Reset Words
+                </button>
+                <button id="nextButton" class="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-6 rounded-lg transition duration-300" disabled>
+                    Next Sentence
+                </button>
+            </div>
+
+            <div id="feedbackArea" class="mt-4 p-4 rounded-lg hidden"></div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h3 class="text-xl font-semibold text-indigo-700 mb-4">Tips for Imperative Sentences</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="bg-indigo-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-indigo-700 mb-2">Polite Imperatives</h4>
+                    <p class="text-gray-700 mb-1">Add "please" to make commands more polite.</p>
+                    <p class="text-gray-600 italic mb-2">加上「please」使命令更有禮貌。</p>
+                    <div class="bg-white p-2 rounded">
+                        <p class="text-indigo-800">Please wait here.</p>
+                        <p class="text-gray-600 italic text-sm">請在這裡等。</p>
+                    </div>
+                </div>
+                
+                <div class="bg-indigo-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-indigo-700 mb-2">Negative Imperatives</h4>
+                    <p class="text-gray-700 mb-1">Add "don't" before the verb.</p>
+                    <p class="text-gray-600 italic mb-2">在動詞前加上「don't」。</p>
+                    <div class="bg-white p-2 rounded">
+                        <p class="text-indigo-800">Don't be late.</p>
+                        <p class="text-gray-600 italic text-sm">不要遲到。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-indigo-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-indigo-700 mb-2">Let/Let's Imperatives</h4>
+                    <p class="text-gray-700 mb-1">"Let" for allowing someone else; "Let's" for suggesting group action.</p>
+                    <p class="text-gray-600 italic mb-2">「Let」用於允許他人做某事；「Let's」用於建議大家一起做某事。</p>
+                    <div class="bg-white p-2 rounded mb-2">
+                        <p class="text-indigo-800">Let him try it.</p>
+                        <p class="text-gray-600 italic text-sm">讓他試試看。</p>
+                    </div>
+                    <div class="bg-white p-2 rounded">
+                        <p class="text-indigo-800">Let's go to the park.</p>
+                        <p class="text-gray-600 italic text-sm">我們去公園吧。</p>
+                    </div>
+                </div>
+                
+                <div class="bg-indigo-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-indigo-700 mb-2">Using Names in Imperatives</h4>
+                    <p class="text-gray-700 mb-1">Add a name to direct the command to a specific person.</p>
+                    <p class="text-gray-600 italic mb-2">加上名字以將命令指向特定的人。</p>
+                    <div class="bg-white p-2 rounded mb-2">
+                        <p class="text-indigo-800">John, close the window.</p>
+                        <p class="text-gray-600 italic text-sm">約翰，關上窗戶。</p>
+                    </div>
+                    <div class="bg-white p-2 rounded">
+                        <p class="text-indigo-800">Mary and Tom, please be quiet.</p>
+                        <p class="text-gray-600 italic text-sm">瑪麗和湯姆，請安靜。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-indigo-800 text-indigo-100 py-6 mt-8">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-center items-center space-y-4 md:space-y-0">
+                <!-- Links -->
+                <div class="flex items-center space-x-4">
+                    <a href="https://www.aaronshi.cc" target="_blank" rel="noopener noreferrer" class="flex items-center hover:text-white transition duration-300">
+                        Go to AaronShi.cc
+                    </a>
+                    <span class="text-indigo-300">|</span>
+                    <a href="https://app.aaronshi.cc" target="_blank" rel="noopener noreferrer" class="flex items-center hover:text-white transition duration-300">
+                        Back to AaronShi.cc App
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Game data
+            const levels = [
+                {
+                    words: ["open", "the", "window"],
+                    correctSentence: "open the window",
+                    translation: "打開窗戶。"
+                },
+                {
+                    words: ["please", "be", "quiet"],
+                    correctSentence: "please be quiet",
+                    translation: "請安靜。"
+                },
+                {
+                    words: ["turn", "off", "your", "phone"],
+                    correctSentence: "turn off your phone",
+                    translation: "關掉你的手機。"
+                },
+                {
+                    words: ["don't", "forget", "your", "homework"],
+                    correctSentence: "don't forget your homework",
+                    translation: "不要忘記你的作業。"
+                },
+                {
+                    words: ["please", "wait", "for", "me"],
+                    correctSentence: "please wait for me",
+                    translation: "請等我。"
+                },
+                {
+                    words: ["clean", "your", "room"],
+                    correctSentence: "clean your room",
+                    translation: "打掃你的房間。"
+                },
+                {
+                    words: ["don't", "be", "late"],
+                    correctSentence: "don't be late",
+                    translation: "不要遲到。"
+                },
+                {
+                    words: ["let's", "go", "to", "the", "park"],
+                    correctSentence: "let's go to the park",
+                    translation: "我們去公園吧。"
+                },
+                {
+                    words: ["John", "help", "me", "please"],
+                    correctSentence: "John help me please",
+                    translation: "約翰，請幫助我。"
+                },
+                {
+                    words: ["let", "him", "try", "it"],
+                    correctSentence: "let him try it",
+                    translation: "讓他試試看。"
+                }
+            ];
+
+            // Game variables
+            let currentLevel = 0;
+            let score = 0;
+            let maxLevel = levels.length;
+            let isAnswerChecked = false;
+            let currentLevelWords = [];
+
+            // DOM elements
+            const wordBank = document.getElementById('wordBank');
+            const sentenceArea = document.getElementById('sentenceArea');
+            const checkButton = document.getElementById('checkButton');
+            const resetButton = document.getElementById('resetButton');
+            const nextButton = document.getElementById('nextButton');
+            const feedbackArea = document.getElementById('feedbackArea');
+            const levelDisplay = document.getElementById('levelDisplay');
+            const scoreDisplay = document.getElementById('scoreDisplay');
+            const progressBar = document.getElementById('progressBar');
+
+            // Initialize game
+            function initGame() {
+                loadLevel(currentLevel);
+                updateUI();
+            }
+
+            // Load level
+            function loadLevel(level) {
+                // Clear areas
+                wordBank.innerHTML = '';
+                sentenceArea.innerHTML = '';
+                feedbackArea.classList.add('hidden');
+                
+                // Store current level words
+                currentLevelWords = [...levels[level].words];
+                
+                // Shuffle words
+                const shuffledWords = [...currentLevelWords].sort(() => Math.random() - 0.5);
+                
+                // Create word elements
+                createWordElements(shuffledWords, wordBank);
+
+                // Reset state
+                isAnswerChecked = false;
+                nextButton.disabled = true;
+                checkButton.disabled = false;
+            }
+
+            // Create word elements in a container
+            function createWordElements(words, container) {
+                container.innerHTML = '';
+                words.forEach(word => {
+                    const wordElement = document.createElement('div');
+                    wordElement.className = 'draggable bg-indigo-600 text-white py-2 px-4 rounded-lg shadow-sm';
+                    wordElement.textContent = word;
+                    wordElement.setAttribute('draggable', 'true');
+                    wordElement.dataset.word = word;
+                    
+                    // Add event listeners
+                    wordElement.addEventListener('dragstart', dragStart);
+                    wordElement.addEventListener('dragend', dragEnd);
+                    wordElement.addEventListener('click', handleWordClick);
+                    
+                    container.appendChild(wordElement);
+                });
+            }
+
+            // Update UI elements
+            function updateUI() {
+                levelDisplay.textContent = currentLevel + 1;
+                scoreDisplay.textContent = score;
+                progressBar.style.width = `${(currentLevel / maxLevel) * 100}%`;
+            }
+
+            // Drag and drop functionality
+            function dragStart(e) {
+                if (isAnswerChecked) return;
+                e.dataTransfer.setData('text/plain', e.target.textContent);
+                e.target.classList.add('opacity-50');
+            }
+
+            function dragEnd(e) {
+                e.target.classList.remove('opacity-50');
+            }
+
+            function dragOver(e) {
+                if (isAnswerChecked) return;
+                e.preventDefault();
+            }
+
+            function dragEnter(e) {
+                if (isAnswerChecked) return;
+                e.preventDefault();
+                this.classList.add('highlight');
+            }
+
+            function dragLeave() {
+                if (isAnswerChecked) return;
+                this.classList.remove('highlight');
+            }
+
+            function drop(e) {
+                if (isAnswerChecked) return;
+                e.preventDefault();
+                this.classList.remove('highlight');
+                
+                const word = e.dataTransfer.getData('text/plain');
+                
+                // Find the dragged element
+                let draggedElement = null;
+                const allWordElements = document.querySelectorAll('.draggable');
+                
+                for (let element of allWordElements) {
+                    if (element.textContent === word && element.classList.contains('opacity-50')) {
+                        draggedElement = element;
+                        break;
+                    }
+                }
+                
+                if (draggedElement) {
+                    // Create a new element in the drop area
+                    const wordElement = document.createElement('div');
+                    wordElement.className = 'draggable bg-indigo-500 text-white py-2 px-4 rounded-lg shadow-sm';
+                    wordElement.textContent = word;
+                    wordElement.setAttribute('draggable', 'true');
+                    wordElement.dataset.word = word;
+                    
+                    wordElement.addEventListener('dragstart', dragStart);
+                    wordElement.addEventListener('dragend', dragEnd);
+                    wordElement.addEventListener('click', handleWordClick);
+                    
+                    this.appendChild(wordElement);
+                    
+                    // Remove the original element
+                    draggedElement.remove();
+                }
+            }
+
+            // Handle word click (for mobile support)
+            function handleWordClick(e) {
+                if (isAnswerChecked) return;
+                
+                const clickedElement = e.target;
+                const parentElement = clickedElement.parentElement;
+                
+                if (parentElement === wordBank) {
+                    // Move from word bank to sentence area
+                    const clonedElement = document.createElement('div');
+                    clonedElement.className = 'draggable bg-indigo-500 text-white py-2 px-4 rounded-lg shadow-sm';
+                    clonedElement.textContent = clickedElement.textContent;
+                    clonedElement.setAttribute('draggable', 'true');
+                    clonedElement.dataset.word = clickedElement.dataset.word;
+                    
+                    clonedElement.addEventListener('dragstart', dragStart);
+                    clonedElement.addEventListener('dragend', dragEnd);
+                    clonedElement.addEventListener('click', handleWordClick);
+                    
+                    sentenceArea.appendChild(clonedElement);
+                    clickedElement.remove();
+                } else if (parentElement === sentenceArea) {
+                    // Move from sentence area back to word bank
+                    const clonedElement = document.createElement('div');
+                    clonedElement.className = 'draggable bg-indigo-600 text-white py-2 px-4 rounded-lg shadow-sm';
+                    clonedElement.textContent = clickedElement.textContent;
+                    clonedElement.setAttribute('draggable', 'true');
+                    clonedElement.dataset.word = clickedElement.dataset.word;
+                    
+                    clonedElement.addEventListener('dragstart', dragStart);
+                    clonedElement.addEventListener('dragend', dragEnd);
+                    clonedElement.addEventListener('click', handleWordClick);
+                    
+                    wordBank.appendChild(clonedElement);
+                    clickedElement.remove();
+                }
+            }
+
+            // Reset the current level
+            function resetLevel() {
+                // Get all words currently in both areas
+                const allWords = [];
+                document.querySelectorAll('.draggable').forEach(el => {
+                    allWords.push(el.textContent);
+                });
+                
+                // Clear both areas
+                wordBank.innerHTML = '';
+                sentenceArea.innerHTML = '';
+                
+                // Put all words back in the word bank in shuffled order
+                const shuffledWords = [...currentLevelWords].sort(() => Math.random() - 0.5);
+                createWordElements(shuffledWords, wordBank);
+                
+                // Hide feedback if shown
+                if (!feedbackArea.classList.contains('hidden')) {
+                    feedbackArea.classList.add('hidden');
+                }
+                
+                // Reset state if answer was checked
+                if (isAnswerChecked) {
+                    isAnswerChecked = false;
+                    checkButton.disabled = false;
+                }
+            }
+
+            // Check answer
+            function checkAnswer() {
+                const userSentence = Array.from(sentenceArea.querySelectorAll('.draggable'))
+                    .map(element => element.textContent)
+                    .join(' ');
+                
+                const correctSentence = levels[currentLevel].correctSentence;
+                const isCorrect = userSentence.toLowerCase() === correctSentence.toLowerCase();
+                
+                feedbackArea.innerHTML = '';
+                feedbackArea.classList.remove('hidden', 'bg-green-100', 'bg-red-100');
+                
+                if (isCorrect) {
+                    // Correct answer
+                    score += 10;
+                    feedbackArea.classList.add('bg-green-100');
+                    
+                    const feedbackContent = `
+                        <div class="flex items-start">
+                            <svg class="w-6 h-6 text-green-600 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <div>
+                                <p class="font-medium text-green-800">Correct! Well done!</p>
+                                <p class="text-green-700 mt-1">${correctSentence}</p>
+                                <p class="text-gray-600 italic mt-1">${levels[currentLevel].translation}</p>
+                            </div>
+                        </div>
+                    `;
+                    
+                    feedbackArea.innerHTML = feedbackContent;
+                    sentenceArea.classList.add('success-animation');
+                    setTimeout(() => {
+                        sentenceArea.classList.remove('success-animation');
+                    }, 500);
+                } else {
+                    // Incorrect answer
+                    feedbackArea.classList.add('bg-red-100');
+                    
+                    const feedbackContent = `
+                        <div class="flex items-start">
+                            <svg class="w-6 h-6 text-red-600 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                            <div>
+                                <p class="font-medium text-red-800">Not quite right. Try again!</p>
+                                <p class="text-gray-700 mt-1">Hint: The correct order matters.</p>
+                                <p class="text-gray-600 mt-2">Click "Reset Words" to try again.</p>
+                            </div>
+                        </div>
+                    `;
+                    
+                    feedbackArea.innerHTML = feedbackContent;
+                    sentenceArea.classList.add('warning');
+                    setTimeout(() => {
+                        sentenceArea.classList.remove('warning');
+                    }, 500);
+                }
+                
+                isAnswerChecked = true;
+                nextButton.disabled = !isCorrect;
+                checkButton.disabled = isCorrect;
+                updateUI();
+            }
+
+            // Move to next level
+            function nextLevel() {
+                currentLevel++;
+                
+                if (currentLevel < maxLevel) {
+                    loadLevel(currentLevel);
+                    updateUI();
+                    
+                    // Add shuffle animation to word bank
+                    wordBank.classList.add('shuffle-animation');
+                    setTimeout(() => {
+                        wordBank.classList.remove('shuffle-animation');
+                    }, 800);
+                } else {
+                    // Game completed
+                    showGameComplete();
+                }
+            }
+
+            // Show game complete screen
+            function showGameComplete() {
+                const gameContainer = document.getElementById('gameContainer');
+                gameContainer.innerHTML = `
+                    <div class="text-center py-8">
+                        <div class="mb-6">
+                            <svg class="w-20 h-20 text-indigo-600 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-indigo-800 mb-2">Congratulations!</h3>
+                        <p class="text-lg text-gray-700 mb-4">You've completed all levels!</p>
+                        <p class="text-xl font-semibold text-indigo-700 mb-6">Final Score: ${score}</p>
+                        <button id="restartButton" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-8 rounded-lg transition duration-300">
+                            Play Again
+                        </button>
+                    </div>
+                `;
+                
+                document.getElementById('restartButton').addEventListener('click', restartGame);
+            }
+
+            // Restart game
+            function restartGame() {
+                currentLevel = 0;
+                score = 0;
+                initGame();
+            }
+
+            // Set up drop area event listeners
+            sentenceArea.addEventListener('dragover', dragOver);
+            sentenceArea.addEventListener('dragenter', dragEnter);
+            sentenceArea.addEventListener('dragleave', dragLeave);
+            sentenceArea.addEventListener('drop', drop);
+
+            // Event listeners
+            checkButton.addEventListener('click', checkAnswer);
+            resetButton.addEventListener('click', resetLevel);
+            nextButton.addEventListener('click', nextLevel);
+
+            // Initialize the game
+            initGame();
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'95acce7884564a33',t:'MTc1MTc4MDgzOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
